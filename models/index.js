@@ -17,8 +17,12 @@ const db = {}
 db.Sequelize=Sequelize;
 db.sequelize=sequelize;
 
+db.student =  require('./student')(sequelize,DataTypes,Model);
+db.employee = require('./employee')(sequelize,DataTypes,Model);
+db.cource = require('./cource')(sequelize,DataTypes,Model);
 
-db.student =  require('./student')(sequelize,DataTypes,Model)
-db.employee = require('./employee')(sequelize,DataTypes,Model)
+db.cource.hasMany(db.student,{foreignKey: 'cource_id'});
+db.student.belongsTo(db.cource,{foreignKey: 'cource_id'});
+
 db.sequelize.sync({ force: false });
 module.exports=db

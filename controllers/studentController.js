@@ -1,7 +1,8 @@
-const { where } = require('sequelize');
+const { where, Sequelize, Op } = require('sequelize');
 const db = require('../models');
 const { sendSuccess, sendError } = require('../utils/responseHelper');
 const Student = db.student;
+const Cource = db.cource;
 
 /**
  * Validates the request data for adding a student.
@@ -23,7 +24,7 @@ const validateStudentData = (data) => {
  */
 const addStudent = async (req, res) => {
     try {
-        const { name, roll_no } = req.body;
+        const { name, roll_no, cource_id } = req.body;
         // Validate request data
         const validation = validateStudentData(req.body);
         if (!validation.isValid) {
@@ -31,7 +32,7 @@ const addStudent = async (req, res) => {
         }
 
         // Create a new student
-        const result = await Student.create({ name, roll_no });
+        const result = await Student.create({ name, roll_no, cource_id });
 
         // Respond with success
         return sendSuccess(res, 'Student added successfully.', result, 200);
@@ -42,14 +43,33 @@ const addStudent = async (req, res) => {
 };
 
 const getAllStudents = async(req,res) => {
+
     try {
-        const dataResult = await Student.findAll();
+        const studentId = 1;
+        const dataResult = await Student.findAll({
+            include:[{
+                model:Cource,
+                attributes:[['name','cource_name'],'fees']
+            }],
+            attributes: {
+                exclude: ['id','name'],
+                 include: [['name','student_name']]
+            },
+            // where:{
+            //     // id:{
+            //     //     [Op.ne]: studentId
+            //     // }
+            //     [Op.or]:[{id:1},{id:2}]
+            // }
+            // group: ['id', 'name', 'roll_no'] 
+        });
         return sendSuccess(res,'All student datas',dataResult,200)
     } catch (error) {
         console.error('Error adding student:', error);
         return sendError(res, 'Failed to fetch all student.', error.message || {}, 500);
     }
 }
+
 const getStudent = async(req,res) => {
     try {
         const studentId = req.params.id;
@@ -58,7 +78,9 @@ const getStudent = async(req,res) => {
         }
         const dataResult = await Student.findOne({
             where:{
-                id:studentId
+                id:{
+                    [Op.eq]: studentId
+                }
             }
         });
         return sendSuccess(res,'All student datas',dataResult,200)
