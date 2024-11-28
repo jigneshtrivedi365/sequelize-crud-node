@@ -23,7 +23,5 @@ module.exports = (sequelize,DataTypes,Model) => {
 
     // `sequelize.define` also returns the model
     console.log(Student === sequelize.models.Student); // true
-
     return Student;
 }
-// module.exports=Student;
